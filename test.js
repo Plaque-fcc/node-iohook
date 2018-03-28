@@ -1,6 +1,3 @@
-const NodeHookAddon = require("bindings")("node-iohook");
+const NodeHookAddon = require('bindings')('node-iohook');
 
-NodeHookAddon.start_hook(function(event)
-{
-	console.log(event)
-})
+NodeHookAddon.startHook(event => console.log(event));
