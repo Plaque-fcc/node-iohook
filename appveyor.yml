@@ -2,31 +2,25 @@
 
 # Test against these versions of Io.js and Node.js.
 environment:
-  os: Visual Studio 2013
-  matrix:
-  # node.js
-    - nodejs_version: "6"
-os: Previous Visual Studio 2013
+  os: Visual Studio 2015
+    - arch: x86_64
+      bits: 64
+      nodejs_version: 9
+    - arch: i686
+      bits: 32
+      nodejs_version: 9
 
-# Install scripts. (runs after repo cloning)
 install:
-  - set PATH=C:\Program Files (x86)\MSBuild\12.0\Bin;%PATH%
-  # Get the latest stable version of Node 0.STABLE.latest
+  - set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
   - git submodule update --init
   - ps: Install-Product node $env:nodejs_version
   - npm -g install npm
-  # Typical npm stuff.
   - npm install
 
-# Post-install test scripts.
 test_script:
-  # Output useful info for debugging.
   - node --version
   - npm --version
   - npm test
-
-# Don't actually build.
-build: off
 
 # Set build version format here instead of in the admin panel.
 version: "{build}"
