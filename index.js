@@ -1,3 +1,4 @@
+const SegfaultHandler = require('segfault-handler');
 const NodeHookAddon = require('bindings')('node-iohook');
 
 /**
@@ -81,6 +82,8 @@ class IOHook {
     this.callbacks = {};
 
     this.started = false;
+
+    SegfaultHandler.registerHandler('crash.log');
   }
 
   static getStatus() {
