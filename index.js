@@ -1,140 +1,146 @@
-'use strict'
+const NodeHookAddon = require('bindings')('node-iohook');
 
-const NodeHookAddon = require("bindings")("node-iohook");
-const EventEmitter = require('events');
+/**
+ * mapping of module event type to the event string
+ *
+ * @type {Object}
+ */
+const eventMap = {
+  3: 'keypress',
+  4: 'keydown',
+  5: 'keyup',
+  6: 'mouseclick',
+  7: 'mousedown',
+  8: 'mouseup',
+  9: 'mousemove',
+  10: 'mousedrag',
+  11: 'mousewheel',
+};
 
-class IOCallback{
+/** Class to handle hook callbacks */
+class IOCallback {
+  constructor() {
+    this.callbacks = [];
+    this.active = false;
+  }
 
-	constructor()
-	{
-		this._cbObject = {};
-		this.active = false;
-	}
-	add(event,cb)
-	{
-		this._cbObject[event]=cb;
-	}
-	getCB(cb){
-		let that = this;
-		return function(msg){
-			
-			if(that.active==false) return;
-			if(msg==undefined) {console.log(msg); return;}
-			if(msg.type==3)
-			{
-				if(that._cbObject["keypress"])
-				{
-					that._cbObject["keypress"](msg);
-				}
+  add(event, callback) {
+    /**
+     * Adds a callback to the respective event
+     *
+     * @param {String} event the event string
+     * @param {Function} callback the callback function
+     */
+    if (!this.callbacks[event]) {
+      this.callbacks[event] = [];
+    }
 
-			}
-			else if(msg.type==4)
-			{
-				if(that._cbObject["keydown"])
-				{
-					that._cbObject["keydown"](msg);
-				}
+    this.callbacks[event].push(callback);
+  }
 
-			}
-			else if(msg.type==5)
-			{
-				if(that._cbObject["keyup"])
-				{
-					that._cbObject["keyup"](msg);
-				}
+  clearCallback() {
+    /**
+     * Clears all callbacks
+     *
+     * @param {String} Event the event string
+     */
+    this.callbacks = [];
+  }
 
-			}
-			else if(msg.type==6)
-			{
-				if(that._cbObject["mouseclick"])
-				{
-					that._cbObject["mouseclick"](msg);
-				}
+  run() {
+    /**
+     * Setup the callbacks when IOHook recieves an event.
+     *
+     * @param {Object} msg the hook object
+     *
+     * @return {Function} callback function
+     */
+    return (msg) => {
+      if (this.active === false || msg === false) return;
 
-			}
-			else if(msg.type==7)
-			{
-				if(that._cbObject["mousedown"])
-				{
-					that._cbObject["mousedown"](msg);
-				}
+      this.runCallbacks(eventMap[msg.type], msg);
+    };
+  }
 
-			}
-			else if(msg.type==8)
-			{
-				
-				if(that._cbObject["mouseup"])
-				{
-					that._cbObject["mouseup"](msg);	
-				}	
-			}
-			else if (msg.type == 9)
-			{
-				if(that._cbObject["mousemove"])
-				{
-					that._cbObject["mousemove"](msg);	
-				}	
-			}
-			else if (msg.type == 10)
-			{
-				if(that._cbObject["mousedrag"])
-				{
-					that._cbObject["mousedrag"](msg);	
-				}	
-			}
-			else if( msg.type == 11)
-			{
-				if(that._cbObject["mousewheel"])
-				{
-					that._cbObject["mousewheel"](msg);	
-				}
-			}
-		}
-	}
-
-
-
+  runCallbacks(event, msg) {
+    /**
+     * Calls every callback attached to an event
+     *
+     * @param {String} event the event string
+     * @param {Object} msg the hook object
+     */
+    if (this.callbacks[event]) {
+      this.callbacks[event].forEach(callback => callback(msg));
+    }
+  }
 }
 
 class IOHook {
+  constructor() {
+    this.callback = new IOCallback();
+    this.callbacks = {};
 
-	constructor(){
-		this.eventEmitter = new EventEmitter();
-		this.callback = new IOCallback();
-		this.status = "stoped"
-	}
-	
+    this.started = false;
+  }
 
-	on(event,callback)
-	{
-		this.callback.add(event,callback);
-		
-	}	
+  static getStatus() {
+    return NodeHookAddon.getStatus();
+  }
 
-	start(callback){
-		if(this.status == "stoped")
-		{
-			NodeHookAddon.start_hook(this.callback.getCB(callback))
-			this.status = "started"	
-			this.callback.active = true;
-		}
-		
-	}
+  /**
+   * Creates a callback to an event string
+   *
+   * @param {String} event event string to hook
+   * @param {Function} callback callback function
+   */
+  on(event, callback) {
+    this.callback.add(event, callback);
+  }
 
-	pause()
-	{
-		this.callback.active = false;
-	}
+  /**
+   * Starts the hook module
+   *
+   * @param {Function} callback optional callback
+   */
+  start(callback) {
+    if (this.started === false) {
+      NodeHookAddon.startHook(this.callback.run(callback));
 
-	resume()
-	{
-		this.callback.active = true;
-	}
+      this.started = true;
+      this.callback.active = true;
+    } else {
+      console.error('IOHook has already started');
+    }
+  }
 
-	stop(){
-		NodeHookAddon.stop_hook();
-	}
+  /**
+   * Pauses all callbacks
+   */
+  pause() {
+    this.callback.active = false;
+  }
 
+  /**
+   * Resumes all callbacks
+   */
+  resume() {
+    this.callback.active = true;
+  }
+
+  /**
+   * Stops the callback module
+   */
+  stop() {
+    if (this.started === true) {
+      this.started = false;
+      NodeHookAddon.stopHook();
+
+      this.callback.active = false;
+      this.callback.clearCallback();
+    } else {
+      console.error('IOHook has not yet started');
+    }
+  }
 }
 
 module.exports = IOHook;
