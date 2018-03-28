@@ -1,5 +1,6 @@
 # http://www.appveyor.com/docs/appveyor-yml
 os: Visual Studio 2015
+build: off
 
 # Test against these versions of Io.js and Node.js.
 environment:
@@ -13,7 +14,6 @@ environment:
 
 install:
   - set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
-  - git submodule update --init
   - ps: Install-Product node $env:nodejs_version
   - npm -g install npm
   - npm install
@@ -21,7 +21,7 @@ install:
 test_script:
   - node --version
   - npm --version
-  - npm test
+  #- npm test
 
 # Set build version format here instead of in the admin panel.
 version: "{build}"
