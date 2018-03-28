@@ -42,3 +42,6 @@ before_script:
   
 install:
   - npm i --ignore-scripts
+  
+script: 
+  - npm install
