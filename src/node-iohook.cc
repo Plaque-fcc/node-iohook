@@ -5,8 +5,8 @@
 
 using namespace v8;
 using Callback = Nan::Callback;
-static bool sIsRuning=false; 
 
+static bool sIsRunning = false; 
 static HookProcessWorker* sIOHook = nullptr;
 
 static void dispatch_proc(uiohook_event * const event)
@@ -41,7 +41,7 @@ void HookProcessWorker::Execute(const Nan::AsyncProgressWorkerBase<uiohook_event
 void HookProcessWorker::Stop()
 {
 	hook_stop();
-	sIsRuning = false;
+	sIsRunning = false;
 }
 void HookProcessWorker::HandleProgressCallback(const uiohook_event *data, size_t size)
 {
@@ -93,9 +93,8 @@ void HookProcessWorker::HandleProgressCallback(const uiohook_event *data, size_t
 
 
 NAN_METHOD(StartHook) {
-
     //allow one single execution
-    if(sIsRuning==false)
+    if(sIsRunning==false)
     {
         if(info.Length() >0)
         {
@@ -104,7 +103,7 @@ NAN_METHOD(StartHook) {
 				Callback* callback = new Callback(info[0].As<Function>());
 				sIOHook = new HookProcessWorker(callback);
 				Nan::AsyncQueueWorker(sIOHook);
-				sIsRuning = true;
+				sIsRunning = true;
 			}
         }
     }
@@ -113,21 +112,25 @@ NAN_METHOD(StartHook) {
 NAN_METHOD(StopHook) {
 
 	//allow one single execution
-	if ((sIsRuning == true) && (sIOHook !=nullptr))
+	if ((sIsRunning == true) && (sIOHook !=nullptr))
 	{
 		sIOHook->Stop();
 	}
 }
 
-NAN_MODULE_INIT(Init) {
-   
-  
+NAN_METHOD(GetStatus) {
+	info.GetReturnValue().Set(sIsRunning);
+}
 
-   Nan::Set(target, Nan::New<String>("start_hook").ToLocalChecked(),
+NAN_MODULE_INIT(Init) {
+   Nan::Set(target, Nan::New<String>("startHook").ToLocalChecked(),
 	   Nan::GetFunction(Nan::New<FunctionTemplate>(StartHook)).ToLocalChecked());
 
-   Nan::Set(target, Nan::New<String>("stop_hook").ToLocalChecked(),
+   Nan::Set(target, Nan::New<String>("stopHook").ToLocalChecked(),
 	   Nan::GetFunction(Nan::New<FunctionTemplate>(StopHook)).ToLocalChecked());
+
+	Nan::Set(target, Nan::New<String>("getStatus").ToLocalChecked(),
+	   Nan::GetFunction(Nan::New<FunctionTemplate>(GetStatus)).ToLocalChecked());
 }
 
 NODE_MODULE(nodeHook, Init)
