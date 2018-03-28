@@ -10,7 +10,7 @@ class HookProcessWorker : public Nan::AsyncProgressWorkerBase<uiohook_event>
 {
 	public:
 
-		typedef  Nan::AsyncProgressWorkerBase<uiohook_event>::ExecutionProgress HookExecution;
+		typedef Nan::AsyncProgressWorkerBase<uiohook_event>::ExecutionProgress HookExecution;
 
 		HookProcessWorker(Nan::Callback * callback);
 
