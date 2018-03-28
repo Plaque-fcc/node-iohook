@@ -1,23 +1,19 @@
 # node-iohook
-Binding of libuiohook for nodejs
+NodeJS global keyboard and mouse hooks powered by libuiohook.
 
-# About
+# Requirements
 
-This package help nodejs developer to catch events on mouse and keyboard and register callbacks on every events. 
-
-#requirements
-
-- Windows: VS2015
-- MAC: clang
+- Windows: VS2015+
+- MAC: Clang
 - Linux: GCC
 
-#install
+# Install
 
 ``
   npm install node-iohook
 `` 
 
-#example
+# How
 
 ```
 const hook = require('node-iohook')
@@ -32,5 +28,5 @@ hook.start();
 
 ```
 
-#misc
+# Extra
 ``node-iohook`` work with last ``nodejs`` LTS as well as ``electron``
