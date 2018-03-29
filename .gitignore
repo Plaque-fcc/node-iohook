@@ -7,3 +7,5 @@ build/
 prebuilds
 builds
 *.DS_Store
+.vscode
+.vs
